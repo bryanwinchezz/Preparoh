@@ -13,6 +13,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Ícone Personalizado -->
     <link rel="shortcut icon" href="preparoh.png" type="image/x-icon">
 
     <!-- Libraries -->
@@ -78,11 +79,18 @@
             background: #475569;
         }
 
-        /* --- EDITOR A4 (Fixo para paginação correta) --- */
+        /* --- EDITOR A4 --- */
+        #pages-container {
+            outline: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 50px;
+        }
+
         .a4-page {
             width: 210mm;
             height: 297mm;
-            /* Altura fixa para forçar paginação */
             min-height: 297mm;
             background: white;
             padding: 25mm;
@@ -92,10 +100,9 @@
             font-size: 11pt;
             line-height: 1.6;
             color: #1e293b;
-            outline: none;
             position: relative;
             overflow: hidden;
-            /* Esconde o que passar para o JS mover */
+            cursor: text;
         }
 
         /* Typography inside page */
@@ -199,6 +206,7 @@
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            user-select: none;
         }
 
         .page-break-marker::before,
@@ -208,6 +216,50 @@
             background: #e2e8f0;
             flex: 1;
             margin: 0 10px;
+        }
+
+        /* --- AI CHAT --- */
+        .ai-msg-content {
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .ai-msg-content p {
+            margin-bottom: 1.2em;
+        }
+
+        .ai-msg-content ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin-bottom: 1.2em;
+        }
+
+        .ai-msg-content ol {
+            list-style-type: decimal;
+            padding-left: 1.5em;
+            margin-bottom: 1.2em;
+        }
+
+        .ai-msg-content li {
+            margin-bottom: 0.5em;
+        }
+
+        .ai-msg-content strong {
+            font-weight: 700;
+            color: inherit;
+        }
+
+        .ai-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            transform: none !important;
+            border-left: none !important;
         }
 
         /* --- KANBAN & ANIMATIONS --- */
@@ -258,6 +310,24 @@
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
         }
     </style>
 </head>
@@ -412,30 +482,30 @@
                         <div class="flex gap-4 lg:gap-6 h-full min-w-max" id="kanban-board"></div>
                     </div>
                 </div>
+
+                <!-- NEW HORIZONTAL FILES VIEW -->
                 <div id="view-files" class="view-sect hidden space-y-8">
+                    <!-- Global Upload Area -->
                     <div onclick="document.getElementById('file-input').click()"
                         class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 text-center cursor-pointer hover:bg-white dark:hover:bg-white/5 hover:border-primary-500 transition-all group bg-gray-50 dark:bg-transparent">
                         <i
                             class="fas fa-cloud-upload-alt text-3xl text-gray-400 group-hover:text-primary-500 mb-2 transition-colors"></i>
-                        <p class="font-bold text-gray-600 dark:text-gray-300 text-sm">Clique para adicionar (Máx 2MB)
-                        </p>
+                        <p class="font-bold text-gray-600 dark:text-gray-300 text-sm">Clique para adicionar arquivo (Máx
+                            10MB)</p>
+                        <p class="text-xs text-gray-400 mt-1">O arquivo será salvo na pasta atual.</p>
                         <input type="file" id="file-input" class="hidden" multiple onchange="App.ops.handleFiles(this)">
                     </div>
-                    <div>
-                        <h3
-                            class="font-bold text-slate-700 dark:text-white mb-3 flex items-center gap-2 border-b dark:border-gray-700 pb-2">
-                            <i class="fas fa-image text-purple-500"></i> Galeria de Imagens
-                        </h3>
-                        <div id="files-images-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-                    </div>
-                    <div>
-                        <h3
-                            class="font-bold text-slate-700 dark:text-white mb-3 flex items-center gap-2 border-b dark:border-gray-700 pb-2">
-                            <i class="fas fa-file-pdf text-red-500"></i> Biblioteca de PDFs
-                        </h3>
-                        <div id="files-pdfs-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-                    </div>
+
+                    <!-- Videos Section -->
+                    <div id="section-videos"></div>
+
+                    <!-- Images Section -->
+                    <div id="section-images"></div>
+
+                    <!-- PDFs Section -->
+                    <div id="section-pdfs"></div>
                 </div>
+
                 <div id="view-charts" class="view-sect hidden">
                     <div class="flex justify-end mb-6">
                         <button onclick="App.charts.openBuilder()"
@@ -523,12 +593,15 @@
             <div id="editor-sidebar"
                 class="absolute right-0 top-0 bottom-0 w-80 bg-white dark:bg-dark-surface border-l border-gray-200 dark:border-dark-border flex flex-col shadow-xl z-30 transform translate-x-full lg:relative lg:translate-x-0 transition-transform duration-300 lg:flex"
                 style="display: none;">
-                <div class="flex border-b border-gray-200 dark:border-dark-border">
+                <div class="flex border-b border-gray-200 dark:border-dark-border relative">
                     <button onclick="App.editor.switchSide('ai')" id="btn-side-ai"
                         class="flex-1 py-3 text-sm font-bold border-b-2 border-primary-500 text-primary-600">Tutor
                         IA</button>
                     <button onclick="App.editor.switchSide('comments')" id="btn-side-comments"
                         class="flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-gray-500">Comentários</button>
+                    <button onclick="App.ui.toggleAiFullScreen()"
+                        class="px-3 text-gray-400 hover:text-primary-600 transition-colors" title="Tela Cheia"><i
+                            id="btn-ai-expand-icon" class="fas fa-expand"></i></button>
                     <button onclick="App.editor.toggleSidebar()" class="px-3 lg:hidden"><i
                             class="fas fa-times"></i></button>
                 </div>
@@ -544,6 +617,8 @@
                                 Quiz</button>
                             <button onclick="App.ai.quick('fix')"
                                 class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold uppercase whitespace-nowrap">Corrigir</button>
+                            <button onclick="App.ai.quick('analyze')"
+                                class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded font-bold uppercase whitespace-nowrap">Analisar</button>
                         </div>
                         <div class="relative">
                             <input type="text" id="ai-input"
@@ -598,6 +673,43 @@
         </div>
     </div>
 
+    <!-- Category Settings Modal -->
+    <div id="modal-category-settings"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9300] hidden items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-dark-surface rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-enter border border-gray-200 dark:border-dark-border relative">
+            <button onclick="document.getElementById('modal-category-settings').classList.add('hidden')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            <h3 class="text-xl font-bold mb-6 dark:text-white flex items-center gap-2"><i
+                    class="fas fa-sliders-h text-slate-400"></i> Personalizar Matéria</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nome</label>
+                    <input id="cat-edit-name" type="text"
+                        class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-black/20 dark:text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Ícone (FontAwesome)</label>
+                    <div class="flex gap-2">
+                        <input id="cat-edit-icon" type="text" placeholder="Ex: fa-book"
+                            class="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-black/20 dark:text-white text-sm">
+                        <div class="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-gray-700 text-xl"
+                            id="cat-icon-preview"></div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Cor da Pasta</label>
+                    <div class="flex gap-2 flex-wrap" id="cat-color-picker">
+                        <!-- Colors generated by JS -->
+                    </div>
+                </div>
+                <button id="btn-save-cat"
+                    class="w-full bg-slate-800 dark:bg-primary-600 text-white py-3 rounded-xl font-bold shadow-lg hover:opacity-90 transition-opacity">Salvar
+                    Alterações</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-settings"
         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9200] hidden items-center justify-center p-4">
         <div
@@ -634,7 +746,7 @@
         </div>
     </div>
 
-    <!-- Chart Builder Modal (Full Screen & Auto Dataset Name) -->
+    <!-- Chart Builder Modal -->
     <div id="modal-chart" class="fixed inset-0 bg-white dark:bg-dark-bg z-[8000] hidden flex-col w-full h-full">
         <div
             class="h-16 border-b border-gray-200 dark:border-dark-border flex items-center justify-between px-6 shrink-0 bg-white dark:bg-dark-surface">
@@ -664,7 +776,6 @@
                         <option value="doughnut">Rosca</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="text-xs font-bold text-gray-400 uppercase block mb-2">Opções</label>
                     <div class="flex gap-2 mb-3">
@@ -676,7 +787,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="flex-1 overflow-y-auto min-h-[200px]">
                     <label
                         class="text-xs font-bold text-gray-400 uppercase block mb-2 flex justify-between items-center">
@@ -687,12 +797,10 @@
                     </label>
                     <div id="chart-rows" class="space-y-2"></div>
                 </div>
-
                 <button onclick="App.charts.download()"
                     class="w-full bg-white dark:bg-white/5 border border-gray-300 dark:border-gray-600 text-slate-700 dark:text-white py-3 rounded-lg font-bold text-sm hover:bg-gray-100"><i
                         class="fas fa-download mr-2"></i>Baixar Imagem</button>
             </div>
-
             <!-- Preview Right -->
             <div class="flex-1 bg-white dark:bg-dark-bg p-8 flex items-center justify-center relative overflow-hidden">
                 <div class="w-full h-full relative flex items-center justify-center">
@@ -741,6 +849,53 @@
         const $ = (id) => document.getElementById(id);
         const uuid = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
 
+        // --- DATABASE WRAPPER (INDEXED DB) ---
+        const DB = {
+            name: 'PreparohDB',
+            version: 1,
+            storeName: 'state',
+            db: null,
+
+            open() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.name, this.version);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            db.createObjectStore(this.storeName);
+                        }
+                    };
+                    request.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(this.db);
+                    };
+                    request.onerror = (e) => reject('Erro ao abrir DB');
+                });
+            },
+
+            async get(key) {
+                if (!this.db) await this.open();
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction(this.storeName, 'readonly');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.get(key);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            },
+
+            async set(key, value) {
+                if (!this.db) await this.open();
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction(this.storeName, 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.put(value, key);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            }
+        };
+
         const App = {
             data: {
                 categories: [],
@@ -753,17 +908,37 @@
                 chartInstances: {},
                 currentQuiz: null
             },
+            state: {
+                filesCurrentFolder: { videos: null, images: null, pdfs: null }
+            },
+            saveTimeout: null,
 
-            init() {
+            async init() {
                 try {
-                    const saved = JSON.parse(localStorage.getItem('preparoh_ultimate_v7')) || {};
-                    // Migration check
-                    if (!saved.categories && localStorage.getItem('preparoh_ultimate_v6')) {
-                        const old = JSON.parse(localStorage.getItem('preparoh_ultimate_v6'));
-                        this.data = { ...this.data, ...old, chartInstances: {} };
-                    } else {
+                    // Try Loading from DB
+                    let saved = await DB.get('root');
+
+                    // Migration Logic: Check if LocalStorage has old data and DB is empty
+                    if (!saved) {
+                        const legacyV7 = localStorage.getItem('preparoh_ultimate_v7');
+                        const legacyV6 = localStorage.getItem('preparoh_ultimate_v6');
+
+                        if (legacyV7) {
+                            saved = JSON.parse(legacyV7);
+                            await DB.set('root', saved);
+                            localStorage.removeItem('preparoh_ultimate_v7');
+                        } else if (legacyV6) {
+                            saved = JSON.parse(legacyV6);
+                            saved.chartInstances = {};
+                            await DB.set('root', saved);
+                            localStorage.removeItem('preparoh_ultimate_v6');
+                        }
+                    }
+
+                    if (saved) {
                         this.data = { ...this.data, ...saved, chartInstances: {} };
                     }
+
                     this.sanitizeData();
                 } catch (e) { console.error("Load error", e); }
 
@@ -782,12 +957,30 @@
 
                 setInterval(() => App.pomo.tick(), 1000);
 
-                // FIX: Paste Listener to strip formatting (removes white background)
+                // FIX 1: Paste Listener with enhanced color stripping
                 document.getElementById('editor-viewport').addEventListener('paste', function (e) {
                     if (e.target.isContentEditable) {
                         e.preventDefault();
-                        var text = (e.originalEvent || e).clipboardData.getData('text/plain');
-                        document.execCommand("insertText", false, text);
+                        e.stopPropagation();
+
+                        const clipboardData = (e.originalEvent || e).clipboardData;
+                        let content = clipboardData.getData('text/html');
+
+                        // Fallback to text if no HTML
+                        if (!content) content = clipboardData.getData('text/plain');
+                        else {
+                            // Enhanced Sanitization: Strip forced colors
+                            content = content.replace(/background-color:\s*[^;"]+;?/gi, '');
+                            content = content.replace(/background:\s*[^;"]+;?/gi, '');
+                            content = content.replace(/color:\s*[^;"]+;?/gi, ''); // NEW: Strip text color so it inherits theme
+                        }
+
+                        document.execCommand('insertHTML', false, content);
+
+                        setTimeout(() => {
+                            App.editor.sanitizeStructure();
+                            App.editor.checkAllOverflows();
+                        }, 10);
                     }
                 });
             },
@@ -800,19 +993,27 @@
                         if (!c.tasks.todo) c.tasks.todo = [];
                         if (!c.tasks.doing) c.tasks.doing = [];
                         if (!c.tasks.done) c.tasks.done = [];
+                        if (!c.videos) c.videos = [];
+                        // Migration for folders
+                        if (!c.folders) c.folders = [];
+                    });
+                }
+                // Migration for Categories (Icon/Color)
+                if (this.data.categories) {
+                    this.data.categories.forEach(c => {
+                        if (!c.icon) c.icon = 'fa-folder';
+                        if (!c.color) c.color = 'text-primary-500';
                     });
                 }
             },
 
             persist() {
                 const { chartInstances, currentQuiz, currentQuizData, ...toSave } = this.data;
-                try {
-                    localStorage.setItem('preparoh_ultimate_v7', JSON.stringify(toSave));
-                } catch (e) {
-                    if (e.name === 'QuotaExceededError') {
-                        App.ui.toast("Armazenamento cheio! Exclua arquivos antigos.", "error");
-                    }
-                }
+                if (this.saveTimeout) clearTimeout(this.saveTimeout);
+                this.saveTimeout = setTimeout(async () => {
+                    try { await DB.set('root', toSave); }
+                    catch (e) { App.ui.toast("Erro ao salvar no banco de dados.", "error"); }
+                }, 1000);
             },
 
             nav: {
@@ -821,7 +1022,7 @@
                     App.ui.renderSidebar();
                     App.ui.checkEmpty();
                     const cat = App.data.categories.find(c => c.id === id);
-                    if (cat) $('page-title').innerHTML = `<i class="fas fa-folder text-slate-400 text-sm mr-2"></i> ${cat.name}`;
+                    if (cat) $('page-title').innerHTML = `<i class="fas ${cat.icon || 'fa-folder'} ${cat.color || 'text-slate-400'} text-sm mr-2"></i> ${cat.name}`;
                     this.tab(App.data.activeTab);
                     App.ui.toggleMobileSidebar(false);
                 },
@@ -860,42 +1061,60 @@
                 toggleMobileSidebar(show) {
                     const sb = $('sidebar');
                     const ov = $('sidebar-overlay');
-                    if (show) {
-                        sb.classList.remove('-translate-x-full');
-                        ov.classList.remove('hidden');
-                    } else {
-                        sb.classList.add('-translate-x-full');
-                        ov.classList.add('hidden');
-                    }
+                    if (show) { sb.classList.remove('-translate-x-full'); ov.classList.remove('hidden'); }
+                    else { sb.classList.add('-translate-x-full'); ov.classList.add('hidden'); }
                 },
                 checkEmpty() {
                     $('empty-state').style.display = App.data.activeCatId ? 'none' : 'flex';
                     $('content-area').style.display = App.data.activeCatId ? 'flex' : 'none';
+                },
+                toggleAiFullScreen() {
+                    const sb = $('editor-sidebar');
+                    const btn = $('btn-ai-expand-icon');
+                    const isFull = sb.classList.contains('ai-fullscreen');
+                    if (isFull) {
+                        sb.classList.remove('ai-fullscreen');
+                        sb.classList.add('absolute', 'w-80', 'right-0', 'top-0', 'bottom-0', 'border-l', 'transform', 'duration-300', 'lg:flex', 'lg:translate-x-0', 'lg:relative');
+                        btn.classList.remove('fa-compress'); btn.classList.add('fa-expand');
+                    } else {
+                        sb.classList.remove('absolute', 'w-80', 'right-0', 'top-0', 'bottom-0', 'border-l', 'transform', 'duration-300', 'lg:flex', 'lg:translate-x-0', 'lg:relative');
+                        sb.classList.add('ai-fullscreen');
+                        btn.classList.remove('fa-expand'); btn.classList.add('fa-compress');
+                    }
                 },
                 renderSidebar() {
                     const list = $('category-list');
                     list.innerHTML = '';
                     App.data.categories.forEach(c => {
                         const active = App.data.activeCatId === c.id;
+                        const icon = c.icon || 'fa-folder';
+                        const color = c.color || 'text-primary-500';
+
                         const div = document.createElement('div');
                         div.className = `group flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all ${active ? 'bg-primary-600 text-white shadow-md' : 'hover:bg-gray-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300'}`;
                         div.onclick = () => App.nav.select(c.id);
 
+                        const actionsDiv = document.createElement('div');
+                        actionsDiv.className = "flex gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity p-1 z-10";
+
+                        const settingsBtn = document.createElement('button');
+                        settingsBtn.className = "hover:text-blue-400 transition-colors";
+                        settingsBtn.innerHTML = '<i class="fas fa-cog text-xs"></i>';
+                        settingsBtn.onclick = (e) => { e.stopPropagation(); App.ops.openCategorySettings(c.id); };
+
                         const delBtn = document.createElement('button');
-                        delBtn.className = "opacity-100 lg:opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity p-1 z-10";
+                        delBtn.className = "hover:text-red-400 transition-colors";
                         delBtn.innerHTML = '<i class="fas fa-trash text-xs"></i>';
-                        delBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            App.ops.delCategory(c.id);
-                        };
+                        delBtn.onclick = (e) => { e.stopPropagation(); App.ops.delCategory(c.id); };
+
+                        actionsDiv.appendChild(settingsBtn);
+                        actionsDiv.appendChild(delBtn);
 
                         const contentDiv = document.createElement('div');
                         contentDiv.className = "flex items-center gap-3 overflow-hidden";
-                        contentDiv.innerHTML = `<i class="fas fa-folder ${active ? 'text-white' : 'text-primary-500'}"></i><span class="truncate font-medium text-sm">${c.name}</span>`;
+                        contentDiv.innerHTML = `<i class="fas ${icon} ${active ? 'text-white' : color}"></i><span class="truncate font-medium text-sm">${c.name}</span>`;
 
-                        div.appendChild(contentDiv);
-                        div.appendChild(delBtn);
-                        list.appendChild(div);
+                        div.appendChild(contentDiv); div.appendChild(actionsDiv); list.appendChild(div);
                     });
                 },
                 modal(title, placeholder, callback, initialValue = '') {
@@ -945,7 +1164,6 @@
                         const dataStr = JSON.stringify(toSave);
                         const blob = new Blob([dataStr], { type: "application/json" });
                         const url = URL.createObjectURL(blob);
-
                         const downloadAnchorNode = document.createElement('a');
                         downloadAnchorNode.setAttribute("href", url);
                         downloadAnchorNode.setAttribute("download", "preparoh_backup_" + new Date().toISOString().slice(0, 10) + ".json");
@@ -954,39 +1172,33 @@
                         downloadAnchorNode.remove();
                         URL.revokeObjectURL(url);
                         App.ui.toast("Backup criado com sucesso!");
-                    } catch (e) {
-                        console.error(e);
-                        App.ui.toast("Erro ao criar backup. Tente novamente.", "error");
-                    }
+                    } catch (e) { console.error(e); App.ui.toast("Erro ao criar backup.", "error"); }
                 },
                 restore(input) {
                     const file = input.files[0];
                     if (!file) return;
                     const reader = new FileReader();
-                    reader.onload = (e) => {
+                    reader.onload = async (e) => {
                         try {
                             const data = JSON.parse(e.target.result);
                             if (data.categories && data.content) {
                                 App.data = data;
-                                App.persist(); // Saves to new version key
-                                window.location.reload();
-                            } else {
-                                App.ui.toast("Arquivo inválido", "error");
-                            }
-                        } catch (err) {
-                            App.ui.toast("Erro ao ler arquivo", "error");
-                        }
+                                App.persist(); // Saves to IndexedDB immediately
+                                App.ui.toast("Restaurando...", "success");
+                                setTimeout(() => window.location.reload(), 500);
+                            } else { App.ui.toast("Arquivo inválido", "error"); }
+                        } catch (err) { App.ui.toast("Erro ao ler arquivo", "error"); }
                     };
                     reader.readAsText(file);
-                    input.value = ''; // Reset input so same file can be selected again
+                    input.value = '';
                 }
             },
 
             ops: {
                 addCategory(name) {
                     const id = uuid();
-                    App.data.categories.push({ id, name });
-                    App.data.content[id] = { notes: [], tasks: { todo: [], doing: [], done: [] }, files: [], charts: [], chat: [] };
+                    App.data.categories.push({ id, name, icon: 'fa-folder', color: 'text-primary-500' });
+                    App.data.content[id] = { notes: [], tasks: { todo: [], doing: [], done: [] }, files: [], folders: [], videos: [], charts: [], chat: [] };
                     App.persist();
                     App.ui.renderSidebar();
                     App.nav.select(id);
@@ -998,11 +1210,83 @@
                         if (App.data.activeCatId === id) App.data.activeCatId = null;
                         App.persist();
                         App.ui.renderSidebar();
-                        if (App.data.categories.length > 0) {
-                            App.nav.select(App.data.categories[0].id);
-                        } else {
-                            App.ui.checkEmpty();
-                        }
+                        if (App.data.categories.length > 0) { App.nav.select(App.data.categories[0].id); }
+                        else { App.ui.checkEmpty(); }
+                    });
+                },
+                openCategorySettings(id) {
+                    const cat = App.data.categories.find(c => c.id === id);
+                    if (!cat) return;
+                    $('cat-edit-name').value = cat.name;
+                    $('cat-edit-icon').value = cat.icon || 'fa-folder';
+
+                    const colors = ['text-primary-500', 'text-red-500', 'text-green-500', 'text-blue-500', 'text-yellow-500', 'text-purple-500', 'text-pink-500', 'text-gray-500'];
+                    const picker = $('cat-color-picker');
+                    picker.innerHTML = '';
+                    colors.forEach(c => {
+                        const btn = document.createElement('div');
+                        btn.className = `w-8 h-8 rounded-full cursor-pointer border-2 ${c.replace('text-', 'bg-')} ${cat.color === c ? 'border-black dark:border-white scale-110' : 'border-transparent'}`;
+                        btn.onclick = () => {
+                            cat.color = c;
+                            App.ops.openCategorySettings(id); // Re-render to show selection
+                        };
+                        picker.appendChild(btn);
+                    });
+
+                    $('cat-icon-preview').innerHTML = `<i class="fas ${cat.icon || 'fa-folder'} ${cat.color} text-2xl"></i>`;
+                    $('cat-edit-icon').oninput = (e) => {
+                        $('cat-icon-preview').innerHTML = `<i class="fas ${e.target.value} ${cat.color} text-2xl"></i>`;
+                    };
+
+                    const saveBtn = $('btn-save-cat');
+                    const newBtn = saveBtn.cloneNode(true);
+                    saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+                    newBtn.onclick = () => {
+                        cat.name = $('cat-edit-name').value;
+                        cat.icon = $('cat-edit-icon').value;
+                        // color already set
+                        App.persist();
+                        App.ui.renderSidebar();
+                        $('modal-category-settings').classList.add('hidden');
+                        if (App.data.activeCatId === id) App.nav.select(id); // Refresh title
+                    };
+
+                    $('modal-category-settings').classList.remove('hidden');
+                    $('modal-category-settings').classList.add('flex');
+                },
+                // --- FILE / FOLDER OPS ---
+                addFolder(section) {
+                    App.ui.modal('Nova Pasta', 'Nome da pasta...', (name) => {
+                        const content = App.data.content[App.data.activeCatId];
+                        const currentParent = App.state.filesCurrentFolder[section];
+                        content.folders.push({
+                            id: uuid(),
+                            name,
+                            section,
+                            parentId: currentParent
+                        });
+                        App.persist();
+                        App.render.files();
+                    });
+                },
+                openFolder(section, folderId) {
+                    App.state.filesCurrentFolder[section] = folderId;
+                    App.render.files();
+                },
+                goUpFolder(section) {
+                    const content = App.data.content[App.data.activeCatId];
+                    const currentFolder = content.folders.find(f => f.id === App.state.filesCurrentFolder[section]);
+                    if (currentFolder) {
+                        App.state.filesCurrentFolder[section] = currentFolder.parentId;
+                        App.render.files();
+                    }
+                },
+                delFolder(id, section) {
+                    App.ui.confirm('Excluir pasta inteira?', () => {
+                        // Simple delete (orphans files, but for simplicity we allow it or clear them)
+                        App.data.content[App.data.activeCatId].folders = App.data.content[App.data.activeCatId].folders.filter(f => f.id !== id);
+                        App.persist();
+                        App.render.files();
                     });
                 },
                 delFile(idx) {
@@ -1010,27 +1294,70 @@
                     App.persist();
                     App.render.files();
                 },
+                promptAddVideo() {
+                    App.ui.modal('URL do Vídeo', 'Cole a URL do YouTube...', (url) => {
+                        if (!url) return;
+                        setTimeout(() => {
+                            App.ui.modal('Nome do Vídeo', 'Digite o título...', (name) => {
+                                App.ops.addVideoLink(url, name);
+                            }, 'Vídeo Novo');
+                        }, 300);
+                    });
+                },
+                addVideoLink(url, name) {
+                    if (!url) return;
+                    let thumb = null;
+                    let isYt = false;
+                    const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                    if (ytMatch) {
+                        thumb = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                        isYt = true;
+                    }
+
+                    // Add to current video folder
+                    const folderId = App.state.filesCurrentFolder['videos'];
+
+                    App.data.content[App.data.activeCatId].videos.push({
+                        id: uuid(),
+                        url: url,
+                        thumb: thumb,
+                        name: name || "Vídeo",
+                        folderId: folderId
+                    });
+                    App.persist();
+                    App.render.files();
+                },
+                delVideo(idx) {
+                    App.data.content[App.data.activeCatId].videos.splice(idx, 1);
+                    App.persist();
+                    App.render.files();
+                },
                 handleFiles(input) {
                     Array.from(input.files).forEach(file => {
-                        if (file.size > 2097152) { // 2MB Limit
-                            App.ui.toast(`Arquivo ${file.name} muito grande! Máx 2MB.`, "error");
+                        if (file.size > 10485760) {
+                            App.ui.toast(`Arquivo ${file.name} muito grande! Máx 10MB.`, "error");
                             return;
                         }
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             try {
+                                const type = file.type.includes('image') ? 'images' : 'pdfs';
+                                const folderId = App.state.filesCurrentFolder[type]; // Add to active folder of that type
+
                                 App.data.content[App.data.activeCatId].files.push({
-                                    id: uuid(), name: file.name, type: file.type, data: e.target.result
+                                    id: uuid(),
+                                    name: file.name,
+                                    type: file.type,
+                                    data: e.target.result,
+                                    folderId: folderId
                                 });
                                 App.persist();
                                 App.render.files();
-                            } catch (err) {
-                                App.ui.toast("Erro ao salvar. LocalStorage cheio?", "error");
-                            }
+                            } catch (err) { App.ui.toast("Erro ao processar arquivo.", "error"); }
                         };
                         reader.readAsDataURL(file);
                     });
-                    input.value = ''; // Reset
+                    input.value = '';
                 },
                 search(query) {
                     const box = $('search-results');
@@ -1052,9 +1379,8 @@
                             });
                         });
                     });
-                    if (results.length === 0) {
-                        box.innerHTML = '<p class="text-gray-500 text-sm p-2">Nada encontrado.</p>';
-                    } else {
+                    if (results.length === 0) { box.innerHTML = '<p class="text-gray-500 text-sm p-2">Nada encontrado.</p>'; }
+                    else {
                         box.innerHTML = results.map(r => `
                             <div onclick="App.ops.goTo('${r.catId}', '${r.type}', '${r.id}')" class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0">
                                 <div class="font-bold text-sm text-slate-800 dark:text-white"><i class="fas ${r.type === 'doc' ? 'fa-file-alt text-blue-500' : 'fa-check text-green-500'} mr-2"></i>${r.title}</div>
@@ -1068,12 +1394,44 @@
                     $('search-results').classList.add('hidden');
                     $('global-search').value = '';
                     App.nav.select(catId);
-                    if (type === 'doc') {
-                        App.nav.tab('notes');
-                        App.editor.open(itemId);
-                    } else {
-                        App.nav.tab('tasks');
-                    }
+                    if (type === 'doc') { App.nav.tab('notes'); App.editor.open(itemId); }
+                    else { App.nav.tab('tasks'); }
+                }
+            },
+
+            // FIX 3: Reconstructed Tasks Object
+            tasks: {
+                add(col, text) {
+                    if (!text) return;
+                    const catId = App.data.activeCatId;
+                    if (!App.data.content[catId].tasks[col]) App.data.content[catId].tasks[col] = [];
+                    App.data.content[catId].tasks[col].push(text);
+                    App.persist();
+                    App.render.tasks();
+                },
+                del(col, idx) {
+                    App.ui.confirm('Excluir tarefa?', () => {
+                        const catId = App.data.activeCatId;
+                        App.data.content[catId].tasks[col].splice(idx, 1);
+                        App.persist();
+                        App.render.tasks();
+                    });
+                },
+                edit(col, idx, newVal) {
+                    if (!newVal) return;
+                    const catId = App.data.activeCatId;
+                    App.data.content[catId].tasks[col][idx] = newVal;
+                    App.persist();
+                    App.render.tasks();
+                },
+                move(fromCol, fromIdx, toCol) {
+                    const catId = App.data.activeCatId;
+                    const item = App.data.content[catId].tasks[fromCol][fromIdx];
+                    App.data.content[catId].tasks[fromCol].splice(fromIdx, 1); // Remove from old
+                    if (!App.data.content[catId].tasks[toCol]) App.data.content[catId].tasks[toCol] = [];
+                    App.data.content[catId].tasks[toCol].push(item); // Add to new
+                    App.persist();
+                    App.render.tasks();
                 }
             },
 
@@ -1179,43 +1537,134 @@
                         board.appendChild(colDiv);
                     });
                 },
+                // NEW: REFACTORED FILES RENDERER WITH HORIZONTAL SCROLL AND FOLDERS
                 files() {
-                    const imgGrid = $('files-images-grid');
-                    const pdfGrid = $('files-pdfs-grid');
-                    imgGrid.innerHTML = '';
-                    pdfGrid.innerHTML = '';
-
-                    const files = App.data.content[App.data.activeCatId].files;
-
-                    const renderFile = (f, realIdx, isImg) => {
-                        const div = document.createElement('div');
-                        div.className = "bg-white dark:bg-dark-surface rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-dark-border group relative aspect-square hover:shadow-md transition-all";
-
-                        if (isImg) {
-                            div.innerHTML = `<div class="w-full h-full bg-cover bg-center cursor-pointer hover:scale-105 transition-transform duration-500" style="background-image:url('${f.data}')" onclick="App.viewer.open('${f.data}','img','${f.name}')"></div>`;
-                        } else {
-                            div.innerHTML = `<div class="w-full h-full flex flex-col items-center justify-center cursor-pointer bg-red-50 dark:bg-white/5 text-red-500 hover:bg-red-100 dark:hover:bg-white/10 transition-colors p-4" onclick="App.viewer.openPDF('${f.data}')"><i class="fas fa-file-pdf text-4xl mb-3"></i><span class="text-[10px] font-bold px-1 text-center line-clamp-2 w-full text-slate-600 dark:text-slate-300 leading-tight">${f.name}</span></div>`;
+                    const renderSection = (sectionId, title, iconClass, items, createFn) => {
+                        const container = $(`section-${sectionId}`);
+                        if (!container) {
+                            const wrapper = document.createElement('div');
+                            wrapper.id = `section-${sectionId}`;
+                            wrapper.className = "mb-8";
+                            $('view-files').appendChild(wrapper);
+                            // Re-select
+                            return renderSection(sectionId, title, iconClass, items, createFn);
                         }
 
-                        const delBtn = document.createElement('button');
-                        delBtn.className = "absolute top-1 right-1 bg-black/60 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-500";
-                        delBtn.innerHTML = "<i class='fas fa-trash text-[10px]'></i>";
-                        delBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            App.ui.confirm('Excluir arquivo?', () => App.ops.delFile(realIdx));
-                        };
-                        div.appendChild(delBtn);
-                        return div;
+                        container.innerHTML = '';
+                        const currentFolderId = App.state.filesCurrentFolder[sectionId];
+                        const contentData = App.data.content[App.data.activeCatId];
+
+                        // Header
+                        const header = document.createElement('div');
+                        header.className = "flex items-center justify-between border-b dark:border-gray-700 pb-2 mb-3";
+
+                        // Breadcrumb logic
+                        let pathHtml = `<span class="cursor-pointer hover:underline" onclick="App.ops.openFolder('${sectionId}', null)">${title}</span>`;
+                        if (currentFolderId) {
+                            const folder = contentData.folders.find(f => f.id === currentFolderId);
+                            if (folder) pathHtml += ` <span class="text-gray-400">/</span> <span class="font-bold">${folder.name}</span>`;
+                        }
+
+                        header.innerHTML = `
+                            <h3 class="font-bold text-slate-700 dark:text-white flex items-center gap-2 text-sm">
+                                <i class="${iconClass}"></i> ${pathHtml}
+                            </h3>
+                            <div class="flex gap-2">
+                                ${currentFolderId ? `<button onclick="App.ops.goUpFolder('${sectionId}')" class="text-xs bg-gray-100 dark:bg-white/10 px-3 py-1.5 rounded-lg font-bold hover:bg-gray-200 transition-colors"><i class="fas fa-level-up-alt"></i> Voltar</button>` : ''}
+                                <button onclick="App.ops.addFolder('${sectionId}')" class="text-xs bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-3 py-1.5 rounded-lg font-bold hover:bg-primary-100 transition-colors"><i class="fas fa-folder-plus"></i> Pasta</button>
+                                ${sectionId === 'videos' ? `<button onclick="App.ops.promptAddVideo()" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-100 transition-colors">+ Link</button>` : ''}
+                            </div>
+                        `;
+                        container.appendChild(header);
+
+                        // Horizontal Scroll Container
+                        const scrollBox = document.createElement('div');
+                        scrollBox.className = "flex overflow-x-auto gap-4 p-2 custom-scrollbar min-h-[140px] items-start";
+                        // Horizontal scroll with mouse wheel
+                        scrollBox.addEventListener('wheel', (evt) => {
+                            if (evt.deltaY !== 0) {
+                                evt.preventDefault();
+                                scrollBox.scrollLeft += evt.deltaY;
+                            }
+                        }, { passive: false });
+
+                        // Filter Items (Folders first)
+                        const folders = contentData.folders.filter(f => f.section === sectionId && f.parentId === currentFolderId);
+
+                        // Filter Files based on section type
+                        let viewFiles = [];
+                        if (sectionId === 'videos') {
+                            viewFiles = contentData.videos.filter(v => (v.folderId || null) === currentFolderId);
+                        } else {
+                            // files array contains both images and pdfs, need to filter by mime type AND folder
+                            viewFiles = contentData.files.filter(f => {
+                                const isTargetType = sectionId === 'images' ? f.type.includes('image') : !f.type.includes('image'); // simplified logic
+                                return isTargetType && (f.folderId || null) === currentFolderId;
+                            });
+                        }
+
+                        if (folders.length === 0 && viewFiles.length === 0) {
+                            scrollBox.innerHTML = '<div class="w-full text-center text-gray-400 text-sm italic py-8">Pasta vazia.</div>';
+                        } else {
+                            // Render Folders
+                            folders.forEach(folder => {
+                                const div = document.createElement('div');
+                                div.className = "flex-shrink-0 w-32 flex flex-col gap-2 group cursor-pointer";
+                                div.onclick = () => App.ops.openFolder(sectionId, folder.id);
+                                div.innerHTML = `
+                                    <div class="w-32 h-24 bg-primary-50 dark:bg-white/5 rounded-xl border-2 border-dashed border-primary-200 dark:border-gray-700 flex items-center justify-center text-3xl text-primary-300 group-hover:text-primary-500 group-hover:bg-primary-100 transition-colors relative">
+                                        <i class="fas fa-folder"></i>
+                                        <button onclick="event.stopPropagation(); App.ops.delFolder('${folder.id}', '${sectionId}')" class="absolute top-1 right-1 text-gray-400 hover:text-red-500 text-xs opacity-0 group-hover:opacity-100"><i class="fas fa-times"></i></button>
+                                    </div>
+                                    <span class="text-xs font-bold text-center truncate px-1 text-slate-600 dark:text-slate-300">${folder.name}</span>
+                                `;
+                                scrollBox.appendChild(div);
+                            });
+
+                            // Render Files
+                            viewFiles.forEach((item, idx) => {
+                                // Find real index in main array for deletion
+                                const realIndex = sectionId === 'videos'
+                                    ? contentData.videos.findIndex(x => x.id === item.id)
+                                    : contentData.files.findIndex(x => x.id === item.id);
+
+                                const div = document.createElement('div');
+                                div.className = "flex-shrink-0 w-40 group relative";
+
+                                // Card Content
+                                let innerHTML = '';
+                                if (sectionId === 'videos') {
+                                    if (item.thumb) innerHTML = `<a href="${item.url}" target="_blank" class="w-40 h-24 block bg-cover bg-center rounded-xl shadow-sm hover:scale-105 transition-transform" style="background-image:url('${item.thumb}');"><div class="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/0 rounded-xl"><i class="fas fa-play-circle text-2xl text-white"></i></div></a>`;
+                                    else innerHTML = `<a href="${item.url}" target="_blank" class="w-40 h-24 flex flex-col items-center justify-center bg-slate-100 dark:bg-white/5 rounded-xl shadow-sm hover:text-red-500 text-slate-400 transition-colors"><i class="fas fa-video text-2xl"></i></a>`;
+                                } else if (sectionId === 'images') {
+                                    innerHTML = `<div class="w-40 h-24 bg-cover bg-center rounded-xl shadow-sm hover:scale-105 transition-transform cursor-pointer" style="background-image:url('${item.data}')" onclick="App.viewer.open('${item.data}','img','${item.name}')"></div>`;
+                                } else {
+                                    innerHTML = `<div class="w-40 h-24 flex flex-col items-center justify-center bg-red-50 dark:bg-white/5 text-red-500 rounded-xl shadow-sm hover:bg-red-100 cursor-pointer" onclick="App.viewer.openPDF('${item.data}')"><i class="fas fa-file-pdf text-2xl"></i></div>`;
+                                }
+
+                                div.innerHTML = innerHTML + `
+                                    <div class="mt-1 flex justify-between items-start px-1">
+                                        <span class="text-[10px] font-medium text-slate-600 dark:text-slate-400 truncate max-w-[80%]">${item.name || item.url}</span>
+                                        <button onclick="App.ui.confirm('Deletar?', () => ${sectionId === 'videos' ? `App.ops.delVideo(${realIndex})` : `App.ops.delFile(${realIndex})`})" class="text-gray-300 hover:text-red-500 text-xs"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                `;
+                                scrollBox.appendChild(div);
+                            });
+                        }
+
+                        container.appendChild(scrollBox);
                     };
 
-                    let imgCount = 0, pdfCount = 0;
-                    files.forEach((f, i) => {
-                        if (f.type.includes('image')) { imgGrid.appendChild(renderFile(f, i, true)); imgCount++; }
-                        else { pdfGrid.appendChild(renderFile(f, i, false)); pdfCount++; }
-                    });
+                    const vidGrid = $('files-videos-grid'); // legacy container cleanup
+                    if (vidGrid) vidGrid.remove();
+                    const imgGrid = $('files-images-grid');
+                    if (imgGrid) imgGrid.parentElement.remove(); // Remove parent div logic
+                    const pdfGrid = $('files-pdfs-grid');
+                    if (pdfGrid) pdfGrid.parentElement.remove();
 
-                    if (imgCount === 0) imgGrid.innerHTML = '<p class="col-span-full text-gray-400 text-sm italic py-4">Nenhuma imagem.</p>';
-                    if (pdfCount === 0) pdfGrid.innerHTML = '<p class="col-span-full text-gray-400 text-sm italic py-4">Nenhum PDF.</p>';
+                    renderSection('videos', 'Vídeos', 'fas fa-play-circle text-red-600', [], null);
+                    renderSection('images', 'Imagens', 'fas fa-image text-purple-500', [], null);
+                    renderSection('pdfs', 'PDFs', 'fas fa-file-pdf text-red-500', [], null);
                 },
                 charts() {
                     const grid = $('charts-grid');
@@ -1245,7 +1694,6 @@
                             const ctx = $(`chart-thumb-${idx}`);
                             if (ctx) {
                                 const isCircular = ['pie', 'doughnut'].includes(c.type);
-
                                 const isDark = document.documentElement.classList.contains('dark');
                                 const textColor = isDark ? '#e2e8f0' : '#1e293b';
 
@@ -1265,43 +1713,11 @@
                                         maintainAspectRatio: false,
                                         plugins: {
                                             legend: {
-                                                display: true,
-                                                position: 'top',
-                                                labels: {
-                                                    color: textColor, // Set Color based on theme
-                                                    generateLabels: (chart) => {
-                                                        const data = chart.data;
-                                                        if (data.labels.length && data.datasets.length) {
-                                                            return data.labels.map((label, i) => {
-                                                                const ds = data.datasets[0];
-                                                                const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
-                                                                const border = Array.isArray(ds.borderColor) ? ds.borderColor[i] : ds.borderColor;
-                                                                return {
-                                                                    text: label,
-                                                                    fillStyle: bg,
-                                                                    strokeStyle: border,
-                                                                    lineWidth: 1,
-                                                                    hidden: isNaN(ds.data[i]) || (chart.getDatasetMeta(0).data[i] && chart.getDatasetMeta(0).data[i].hidden),
-                                                                    index: i
-                                                                };
-                                                            });
-                                                        }
-                                                        return [];
-                                                    }
-                                                },
-                                                onClick: (e, legendItem, legend) => {
-                                                    const index = legendItem.index;
-                                                    const ci = legend.chart;
-                                                    if (ci.isDatasetVisible(0)) {
-                                                        const meta = ci.getDatasetMeta(0);
-                                                        // Toggle visibility
-                                                        meta.data[index].hidden = !meta.data[index].hidden;
-                                                        ci.update();
-                                                    }
-                                                }
+                                                display: true, position: 'top',
+                                                labels: { color: textColor, generateLabels: (chart) => { const data = chart.data; if (data.labels.length && data.datasets.length) { return data.labels.map((label, i) => { const ds = data.datasets[0]; const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor; const border = Array.isArray(ds.borderColor) ? ds.borderColor[i] : ds.borderColor; return { text: label, fillStyle: bg, strokeStyle: border, lineWidth: 1, hidden: isNaN(ds.data[i]) || (chart.getDatasetMeta(0).data[i] && chart.getDatasetMeta(0).data[i].hidden), index: i }; }); } return []; }, onClick: (e, legendItem, legend) => { const index = legendItem.index; const ci = legend.chart; if (ci.isDatasetVisible(0)) { const meta = ci.getDatasetMeta(0); meta.data[index].hidden = !meta.data[index].hidden; ci.update(); } } }
                                             }
                                         },
-                                        scales: isCircular ? { x: { display: false }, y: { display: false } } : { y: { max: c.yMax ? parseFloat(c.yMax) : undefined } }
+                                        scales: isCircular ? { x: { display: false }, y: { display: false } } : { y: { max: c.yMax ? parseFloat(c.yMax) : undefined, ticks: { color: textColor } }, x: { ticks: { color: textColor } } }
                                     }
                                 });
                             }
@@ -1310,82 +1726,111 @@
                 }
             },
 
-            tasks: {
-                add(col, val) {
-                    if (!App.data.content[App.data.activeCatId].tasks[col]) App.data.content[App.data.activeCatId].tasks[col] = [];
-                    App.data.content[App.data.activeCatId].tasks[col].push(val);
-                    App.persist(); App.render.tasks();
-                },
-                del(col, idx) {
-                    App.ui.confirm('Excluir tarefa?', () => {
-                        App.data.content[App.data.activeCatId].tasks[col].splice(idx, 1);
-                        App.persist(); App.render.tasks();
-                    });
-                },
-                edit(col, idx, val) {
-                    App.data.content[App.data.activeCatId].tasks[col][idx] = val;
-                    App.persist(); App.render.tasks();
-                },
-                move(fromCol, fromIdx, toCol) {
-                    const item = App.data.content[App.data.activeCatId].tasks[fromCol].splice(fromIdx, 1)[0];
-                    if (!App.data.content[App.data.activeCatId].tasks[toCol]) App.data.content[App.data.activeCatId].tasks[toCol] = [];
-                    App.data.content[App.data.activeCatId].tasks[toCol].push(item);
-                    App.persist(); App.render.tasks();
-                }
-            },
-
             editor: {
                 open(id = null) {
-                    App.data.currentDocId = id; // IMPORTANT: Set current ID first
+                    App.data.currentDocId = id;
                     $('word-editor').classList.remove('hidden');
                     $('word-editor').classList.add('flex');
                     const doc = id ? App.data.content[App.data.activeCatId].notes.find(n => n.id === id) : { title: '', pages: [''], comments: [], chat: [] };
                     $('doc-title').value = doc.title;
-                    $('pages-container').innerHTML = '';
+
+                    const container = $('pages-container');
+                    container.innerHTML = '';
+                    container.contentEditable = true;
+                    let debounceTimer;
+                    container.oninput = (e) => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            App.editor.sanitizeStructure();
+                            App.editor.checkAllOverflows();
+                            App.editor.updateWordCount();
+                        }, 300);
+                    };
+
+                    container.onkeydown = (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            document.execCommand('insertLineBreak');
+                        }
+                    };
+
+                    // Re-add Paste Logic Here as backup/safety for direct container focus
+                    container.onpaste = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const clipboardData = (e.originalEvent || e).clipboardData;
+                        let html = clipboardData.getData('text/html');
+                        let text = clipboardData.getData('text/plain');
+                        let content = html || text;
+
+                        if (html) {
+                            // Strip forced colors so content inherits theme
+                            content = content.replace(/background-color:\s*[^;"]+;?/gi, '');
+                            content = content.replace(/background:\s*[^;"]+;?/gi, '');
+                            content = content.replace(/color:\s*[^;"]+;?/gi, '');
+                            document.execCommand('insertHTML', false, content);
+                        } else {
+                            document.execCommand('insertText', false, text);
+                        }
+                        setTimeout(() => {
+                            App.editor.sanitizeStructure();
+                            App.editor.checkAllOverflows();
+                        }, 10);
+                    };
+
                     (doc.pages.length ? doc.pages : ['']).forEach((content, i) => { this.createPageElement(content, i); });
                     this.renderComments(doc.comments || []);
                     $('ai-messages').innerHTML = '';
                     (doc.chat || []).forEach(m => App.ai.renderMsg(m));
                     this.updateWordCount();
                 },
+                sanitizeStructure() {
+                    const container = $('pages-container');
+                    const children = Array.from(container.childNodes);
+                    let currentPage = null;
+
+                    children.forEach(node => {
+                        if (node.nodeType === 1 && node.classList.contains('page-break-marker')) return;
+                        if (node.nodeType === 1 && node.classList.contains('a4-page')) { currentPage = node; }
+                        else {
+                            if (!currentPage) {
+                                App.editor.addPage();
+                                currentPage = container.querySelector('.a4-page');
+                                currentPage.prepend(node);
+                            } else { currentPage.appendChild(node); }
+                        }
+                    });
+                },
                 createPageElement(content, index) {
                     const container = $('pages-container');
                     if (index > 0) {
-                        const br = document.createElement('div'); br.className = 'page-break-marker'; br.innerText = "Página " + (index + 1);
+                        const br = document.createElement('div');
+                        br.className = 'page-break-marker';
+                        br.innerText = "Página " + (index + 1);
+                        br.contentEditable = false;
                         container.appendChild(br);
                     }
                     const page = document.createElement('div');
                     page.className = 'a4-page';
-                    page.contentEditable = true;
                     page.innerHTML = content;
-
-                    let timeout;
-                    page.oninput = (e) => {
-                        clearTimeout(timeout);
-                        timeout = setTimeout(() => {
-                            App.editor.checkOverflow(e.target);
-                            App.editor.updateWordCount();
-                        }, 500);
-                    };
                     container.appendChild(page);
                 },
                 checkClick(e) { },
-                checkOverflow(element) {
-                    if (element.scrollHeight > element.clientHeight) {
-                        const lastChild = element.lastElementChild;
-                        if (lastChild) {
-                            let nextPage = element.nextElementSibling;
-                            if (nextPage && nextPage.classList.contains('page-break-marker')) nextPage = nextPage.nextElementSibling;
-
-                            if (!nextPage || !nextPage.classList.contains('a4-page')) {
-                                App.editor.addPage();
-                                nextPage = element.nextElementSibling.nextElementSibling;
-                            }
-
-                            if (nextPage) {
-                                nextPage.prepend(lastChild);
-                                if (element.scrollHeight > element.clientHeight) this.checkOverflow(element);
-                            }
+                checkAllOverflows() {
+                    const pages = document.querySelectorAll('.a4-page');
+                    for (let i = 0; i < pages.length; i++) {
+                        let page = pages[i];
+                        while (page.scrollHeight > page.clientHeight) {
+                            const lastChild = page.lastElementChild;
+                            if (lastChild) {
+                                let nextPage = page.nextElementSibling;
+                                if (nextPage && nextPage.classList.contains('page-break-marker')) nextPage = nextPage.nextElementSibling;
+                                if (!nextPage || !nextPage.classList.contains('a4-page')) {
+                                    App.editor.addPage();
+                                    nextPage = page.nextElementSibling.nextElementSibling;
+                                }
+                                if (nextPage) nextPage.prepend(lastChild);
+                            } else { break; }
                         }
                     }
                 },
@@ -1401,16 +1846,13 @@
                     const title = $('doc-title').value || 'Sem Título';
                     const pages = Array.from(document.querySelectorAll('.a4-page')).map(p => p.innerHTML);
                     const catId = App.data.activeCatId;
-
                     let existingDoc = App.data.currentDocId ? App.data.content[catId].notes.find(n => n.id === App.data.currentDocId) : null;
                     const comments = existingDoc ? existingDoc.comments : [];
                     const chat = existingDoc ? existingDoc.chat : [];
-
                     const newDoc = {
                         id: App.data.currentDocId || uuid(),
                         title, pages, updated: Date.now(),
-                        comments: comments,
-                        chat: chat
+                        comments: comments, chat: chat
                     };
                     if (App.data.currentDocId) {
                         const idx = App.data.content[catId].notes.findIndex(n => n.id === App.data.currentDocId);
@@ -1445,19 +1887,11 @@
                         span.onclick = (e) => { e.stopPropagation(); App.editor.switchSide('comments'); };
                         range.surroundContents(span);
                         App.ui.modal('Comentário', 'Escreva...', (txt) => {
-                            // Find the CURRENT doc in memory
                             const catId = App.data.activeCatId;
                             let doc = App.data.content[catId].notes.find(n => n.id === App.data.currentDocId);
-
-                            // If doc doesn't exist yet (new unsaved), create structure
-                            if (!doc) {
-                                App.editor.save(); // Auto-save to ensure ID exists
-                                doc = App.data.content[catId].notes.find(n => n.id === App.data.currentDocId);
-                            }
-
+                            if (!doc) { App.editor.save(); doc = App.data.content[catId].notes.find(n => n.id === App.data.currentDocId); }
                             if (!doc.comments) doc.comments = [];
                             doc.comments.push({ id, text: txt, date: Date.now() });
-
                             App.editor.renderComments(doc.comments);
                             App.editor.switchSide('comments');
                             App.editor.toggleSidebar(true);
@@ -1469,7 +1903,6 @@
                     App.ui.confirm('Excluir comentário?', () => {
                         const catId = App.data.activeCatId;
                         const docIdx = App.data.content[catId].notes.findIndex(n => n.id === App.data.currentDocId);
-
                         if (docIdx > -1) {
                             const doc = App.data.content[catId].notes[docIdx];
                             doc.comments = doc.comments.filter(c => c.id !== id);
@@ -1486,15 +1919,11 @@
                         const div = document.createElement('div');
                         div.className = "bg-white dark:bg-dark-surface p-3 rounded-lg shadow-sm border-l-4 border-yellow-400 text-sm dark:text-gray-300 relative group";
                         div.innerHTML = `<p class="font-bold text-[10px] text-gray-400 mb-1">${new Date(c.date).toLocaleTimeString()}</p><p>${c.text}</p>`;
-
                         const btn = document.createElement('button');
                         btn.className = "absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100";
                         btn.innerHTML = '<i class="fas fa-times"></i>';
-                        // Pass ID correctly as string
                         btn.onclick = (e) => { e.stopPropagation(); App.editor.deleteComment(c.id); };
-
-                        div.appendChild(btn);
-                        el.appendChild(div);
+                        div.appendChild(btn); el.appendChild(div);
                     });
                 },
                 switchSide(panel) {
@@ -1511,16 +1940,72 @@
                         else { sb.classList.add('translate-x-full'); setTimeout(() => sb.style.display = 'none', 300); }
                     }
                 },
+                // FIX 2: Enhanced Export Logic
                 exportWord() {
-                    // Clone the container to manipulate it without affecting the display
                     const clone = $('pages-container').cloneNode(true);
 
-                    // Remove page break markers
+                    // 1. Remove UI markers
                     clone.querySelectorAll('.page-break-marker').forEach(el => el.remove());
 
+                    // 2. Process all elements to fix colors for white paper
+                    const allElements = clone.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        // Remove background colors (often used for dark mode highlighting)
+                        // But keep intended highlights if they are yellow/etc? 
+                        // The user prompt implies fixing visual bugs. Usually Word docs are white background.
+                        // Safest is to remove background-color unless it's a specific highlight (mark).
+                        // For simplicity based on prompt: "Remove fundos que poderiam vir do Dark Mode"
+                        el.style.backgroundColor = 'transparent';
+
+                        // Handle Text Color
+                        const style = el.getAttribute('style');
+                        if (style && (style.includes('color:') || style.includes('COLOR:'))) {
+                            // Get the inline color specifically
+                            const inlineColor = el.style.color;
+
+                            if (inlineColor) {
+                                // Simple heuristic: if it looks like white or very light grey, make it black.
+                                // We create a temporary element to let the browser compute the RGB value for us
+                                // This handles 'white', '#fff', '#ffffff', 'rgb(255,255,255)' normalization.
+                                const temp = document.createElement('div');
+                                temp.style.color = inlineColor;
+                                document.body.appendChild(temp);
+                                const computed = window.getComputedStyle(temp).color;
+                                document.body.removeChild(temp);
+
+                                // computed is usually "rgb(r, g, b)"
+                                const rgbMatch = computed.match(/\d+/g);
+                                if (rgbMatch) {
+                                    const r = parseInt(rgbMatch[0]);
+                                    const g = parseInt(rgbMatch[1]);
+                                    const b = parseInt(rgbMatch[2]);
+
+                                    // Calculate brightness (YIQ formula)
+                                    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+                                    // If bright ( > 200 is a safe bet for "near white"), force black
+                                    // This catches white (#ffffff -> 255), light gray, etc.
+                                    if (brightness > 200) {
+                                        el.style.color = '#000000';
+                                    }
+                                }
+                            }
+                        }
+
+                        // Also handle deprecated <font color="..."> tags if execCommand used them
+                        if (el.tagName === 'FONT' && el.getAttribute('color')) {
+                            const colorAttr = el.getAttribute('color');
+                            if (colorAttr.toLowerCase() === '#ffffff' || colorAttr.toLowerCase() === 'white' || colorAttr.toLowerCase() === '#fff') {
+                                el.setAttribute('color', '#000000');
+                            }
+                        }
+                    });
+
                     const content = clone.innerHTML;
-                    const header = '<' + 'html' + '><' + 'head' + '><' + 'meta charset="utf-8"' + '><' + '/' + 'head' + '><' + 'body' + '>';
-                    const footer = '<' + '/' + 'body' + '><' + '/' + 'html' + '>';
+
+                    // Force Body Black Color in Word CSS
+                    const header = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Export</title><style>body { font-family: "Merriweather", serif; color: #000000 !important; background-color: #ffffff !important; } .a4-page { margin: 0; padding: 0; box-shadow: none; border: none; background: white !important; color: black !important; } /* Ensure text defaults to black */ p, span, div, li, td { color: #000000; } </style></head><body>';
+                    const footer = '</body></html>';
                     const blob = new Blob([header + content + footer], { type: 'application/msword' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
@@ -1533,46 +2018,56 @@
             ai: {
                 renderMsg(msg) {
                     const div = document.createElement('div');
-                    div.className = `p-3 rounded-lg text-sm mb-2 ${msg.role === 'user' ? 'bg-primary-600 text-white self-end ml-4' : 'bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border mr-4 text-slate-700 dark:text-slate-300'}`;
-
+                    div.className = `p-3 rounded-lg text-sm mb-2 ai-msg-content ${msg.role === 'user' ? 'bg-primary-600 text-white self-end ml-4' : 'bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border mr-4 text-slate-700 dark:text-slate-300'}`;
                     if (msg.type === 'quiz_trigger') {
                         App.data.currentQuizData = msg.data;
-                        div.innerHTML = `
-                            <p class="mb-2 font-bold"><i class="fas fa-brain"></i> Quiz Gerado!</p>
-                            <button onclick='App.ai.openQuizModal(App.data.currentQuizData)' class="bg-pink-500 text-white px-4 py-2 rounded-full font-bold shadow hover:bg-pink-600 w-full">Abrir Quiz Interativo</button>
-                        `;
-                    } else {
-                        div.innerHTML = marked.parse(msg.content);
-                    }
+                        div.innerHTML = `<p class="mb-2 font-bold"><i class="fas fa-brain"></i> Quiz Gerado!</p><button onclick='App.ai.openQuizModal(App.data.currentQuizData)' class="bg-pink-500 text-white px-4 py-2 rounded-full font-bold shadow hover:bg-pink-600 w-full">Abrir Quiz Interativo</button>`;
+                    } else { div.innerHTML = marked.parse(msg.content); }
                     $('ai-messages').appendChild(div);
                     $('ai-messages').scrollTop = $('ai-messages').scrollHeight;
                 },
                 async send() {
                     if (!App.data.apiKey && !window.userApiKey) return App.ui.toast("Configure sua API Key primeiro!", "error");
-
                     const txt = $('ai-input').value;
                     if (!txt) return;
                     $('ai-input').value = '';
                     const userMsg = { role: 'user', content: txt };
                     this.renderMsg(userMsg);
                     const context = Array.from(document.querySelectorAll('.a4-page')).map(p => p.innerText).join('\n').substring(0, 5000);
-                    const prompt = `Texto do documento: "${context}". Pergunta do usuário: "${txt}". Responda de forma útil.`;
+                    const prompt = `Instrução: Responda com parágrafos curtos, tópicos e bom espaçamento visual. Texto do documento: "${context}". Pergunta do usuário: "${txt}". Responda de forma útil.`;
                     this.callGemini(prompt, userMsg);
                 },
                 quick(type) {
                     if (!App.data.apiKey && !window.userApiKey) return App.ui.toast("Configure sua API Key primeiro!", "error");
                     const context = Array.from(document.querySelectorAll('.a4-page')).map(p => p.innerText).join('\n').substring(0, 5000);
-
                     if (!context || context.trim().length < 5) return App.ui.toast("Documento vazio ou editor fechado.", "error");
 
-                    let prompt = "";
-                    if (type === 'summary') { prompt = `Resuma o seguinte texto em tópicos claros e detalhados: "${context}"`; this.renderMsg({ role: 'user', content: '[Resumir Documento]' }); this.callGemini(prompt, { role: 'user', content: '[Resumir]' }); }
-                    if (type === 'fix') { prompt = `Corrija gramática, pontuação e melhore a coesão deste texto, mantendo o sentido original: "${context}"`; this.renderMsg({ role: 'user', content: '[Corrigir Texto]' }); this.callGemini(prompt, { role: 'user', content: '[Corrigir]' }); }
+                    const baseInst = "Instrução de Formatação: Use markdown. Separe bem os parágrafos. Use listas com marcadores (-) sempre que possível. Evite blocos de texto denso. ";
+
                     if (type === 'quiz') {
-                        prompt = `Crie um quiz com 3 perguntas de múltipla escolha baseadas no seguinte texto: "${context}". Retorne APENAS um JSON puro (sem markdown) neste formato exato: [{"q":"Pergunta","options":["A","B","C"],"correct":0}]`;
-                        this.renderMsg({ role: 'user', content: '[Criar Quiz do Texto]' });
-                        this.callGemini(prompt, { role: 'user', content: '[Criar Quiz]' }, true);
+                        App.ui.modal('Criar Quiz', 'Quantas questões? (Ex: 3)', (val) => {
+                            const qCount = parseInt(val) || 3;
+                            const prompt = `Crie um quiz com exatas ${qCount} perguntas de múltipla escolha baseadas no seguinte texto: "${context}". Retorne APENAS um JSON puro (sem markdown, sem \`\`\`) neste formato exato: [{"q":"Pergunta","options":["A","B","C"],"correct":0}]`;
+                            this.renderMsg({ role: 'user', content: `[Criar Quiz com ${qCount} questões]` });
+                            this.callGemini(prompt, { role: 'user', content: `[Criar Quiz (${qCount})]` }, true);
+                        });
+                        return;
                     }
+
+                    let prompt = "";
+                    let displayMsg = "";
+                    if (type === 'summary') {
+                        prompt = `${baseInst} Ação: Resuma o texto a seguir de forma concisa. No final, adicione um tópico chamado **Explicação Breve**. Texto: "${context}"`;
+                        displayMsg = "[Resumir Documento]";
+                    } else if (type === 'fix') {
+                        prompt = `${baseInst} Ação: Corrija ortografia e gramática. Texto: "${context}"`;
+                        displayMsg = "[Corrigir Ortografia]";
+                    } else if (type === 'analyze') {
+                        prompt = `${baseInst} Ação: Analise como uma banca de redação. Dê nota (0-1000) e pontos de melhoria. Texto: "${context}"`;
+                        displayMsg = "[Analisar Redação]";
+                    }
+                    this.renderMsg({ role: 'user', content: displayMsg });
+                    this.callGemini(prompt, { role: 'user', content: displayMsg });
                 },
                 async callGemini(prompt, userMsgObj, isJson = false) {
                     const key = App.data.apiKey || window.userApiKey;
@@ -1586,20 +2081,14 @@
                         loadDiv.remove();
                         let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro.";
                         let aiMsg;
-
                         if (isJson) {
                             try {
                                 const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
                                 const json = JSON.parse(jsonStr);
                                 aiMsg = { role: 'ai', content: 'Quiz Pronto', type: 'quiz_trigger', data: json };
-                            } catch (err) {
-                                aiMsg = { role: 'ai', content: "Erro ao gerar formato do Quiz. Tente novamente." };
-                            }
-                        } else {
-                            aiMsg = { role: 'ai', content: text };
-                        }
+                            } catch (err) { aiMsg = { role: 'ai', content: "Erro ao gerar formato do Quiz. Tente novamente." }; }
+                        } else { aiMsg = { role: 'ai', content: text }; }
                         this.renderMsg(aiMsg);
-
                         const docIdx = App.data.content[App.data.activeCatId].notes.findIndex(n => n.id === App.data.currentDocId);
                         if (docIdx > -1) {
                             if (!App.data.content[App.data.activeCatId].notes[docIdx].chat) App.data.content[App.data.activeCatId].notes[docIdx].chat = [];
@@ -1633,15 +2122,12 @@
                         const selected = document.querySelector(`input[name="q${i}"]:checked`);
                         const container = document.getElementsByName(`q${i}`)[0].closest('.space-y-2');
                         const labels = container.querySelectorAll('label');
-
                         labels[q.correct].classList.add('bg-green-100', 'border-green-500', 'dark:bg-green-900/30', 'dark:border-green-500');
-
                         if (selected) {
                             if (parseInt(selected.value) === q.correct) score++;
                             else labels[selected.value].classList.add('bg-red-100', 'border-red-500', 'dark:bg-red-900/30', 'dark:border-red-500');
                         }
                     });
-
                     $('quiz-score').innerText = `Você acertou ${score} de ${App.data.currentQuiz.length}`;
                     $('quiz-result').classList.remove('hidden');
                     $('btn-check-quiz').classList.add('hidden');
@@ -1656,33 +2142,21 @@
                     $('modal-chart').classList.remove('hidden');
                     $('modal-chart').classList.add('flex');
                     $('chart-rows').innerHTML = '';
-
                     if (idx !== null) {
                         const chart = App.data.content[App.data.activeCatId].charts[idx];
-                        $('chart-title').value = chart.title;
-                        $('chart-type').value = chart.type;
-                        $('chart-ymax').value = chart.yMax || '';
-
+                        $('chart-title').value = chart.title; $('chart-type').value = chart.type; $('chart-ymax').value = chart.yMax || '';
                         chart.labels.forEach((lbl, i) => {
                             const val = chart.data[i];
                             const col = (Array.isArray(chart.colors) ? chart.colors[i] : chart.colors) || '#8b5cf6';
                             App.charts.addRow(lbl, val, col);
                         });
-                    } else {
-                        // Default state
-                        $('chart-title').value = '';
-                        $('chart-type').value = 'bar';
-                        $('chart-ymax').value = '';
-                        App.charts.addRow();
-                        App.charts.addRow();
-                    }
+                    } else { $('chart-title').value = ''; $('chart-type').value = 'bar'; $('chart-ymax').value = ''; App.charts.addRow(); App.charts.addRow(); }
                     App.charts.preview();
                 },
                 addRow(l = '', v = '', c = null) {
                     const div = document.createElement('div');
                     const rowCount = document.querySelectorAll('.row-data').length;
                     const autoColor = c || App.charts.colors[rowCount % App.charts.colors.length];
-
                     div.className = "flex gap-2 row-data mb-2 items-center";
                     div.innerHTML = `
                         <input type="color" class="chart-input-color w-8 h-8 rounded cursor-pointer border-0 p-0" value="${autoColor}" oninput="App.charts.preview()">
@@ -1700,21 +2174,13 @@
                         const nameInput = row.querySelector('.chart-input-name');
                         const valInput = row.querySelector('.chart-input-value');
                         const colInput = row.querySelector('.chart-input-color');
-                        if (nameInput && valInput) {
-                            lbls.push(nameInput.value);
-                            vals.push(valInput.value);
-                            colors.push(colInput.value);
-                        }
+                        if (nameInput && valInput) { lbls.push(nameInput.value); vals.push(valInput.value); colors.push(colInput.value); }
                     });
                     const type = $('chart-type').value;
-                    const chartTitle = $('chart-title').value || "Pré-visualização";
+                    const title = $('chart-title').value || "Pré-visualização";
                     const yMax = $('chart-ymax').value;
-
                     const isCircular = ['pie', 'doughnut'].includes(type);
-
                     if (this.tempPreview) this.tempPreview.destroy();
-
-                    // Dark Mode Logic
                     const isDark = document.documentElement.classList.contains('dark');
                     const textColor = isDark ? '#e2e8f0' : '#1e293b';
 
@@ -1722,59 +2188,14 @@
                         type,
                         data: { labels: lbls, datasets: [{ label: 'Dados', data: vals, backgroundColor: colors, borderColor: colors, borderWidth: 1 }] },
                         options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
+                            responsive: true, maintainAspectRatio: false,
                             plugins: {
                                 legend: {
-                                    display: true,
-                                    position: 'top',
-                                    labels: {
-                                        color: textColor, // Set Color based on theme
-                                        generateLabels: (chart) => {
-                                            const data = chart.data;
-                                            if (data.labels.length && data.datasets.length) {
-                                                return data.labels.map((label, i) => {
-                                                    const ds = data.datasets[0];
-                                                    const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
-                                                    const border = Array.isArray(ds.borderColor) ? ds.borderColor[i] : ds.borderColor;
-                                                    return {
-                                                        text: label,
-                                                        fillStyle: bg,
-                                                        strokeStyle: border,
-                                                        lineWidth: 1,
-                                                        hidden: isNaN(ds.data[i]) || (chart.getDatasetMeta(0).data[i] && chart.getDatasetMeta(0).data[i].hidden),
-                                                        index: i
-                                                    };
-                                                });
-                                            }
-                                            return [];
-                                        }
-                                    },
-                                    onClick: (e, legendItem, legend) => {
-                                        const index = legendItem.index;
-                                        const ci = legend.chart;
-                                        if (ci.isDatasetVisible(0)) {
-                                            const meta = ci.getDatasetMeta(0);
-                                            // Toggle visibility
-                                            meta.data[index].hidden = !meta.data[index].hidden;
-                                            ci.update();
-                                        }
-                                    }
+                                    display: true, position: 'top',
+                                    labels: { color: textColor, generateLabels: (chart) => { const data = chart.data; if (data.labels.length && data.datasets.length) { return data.labels.map((label, i) => { const ds = data.datasets[0]; const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor; const border = Array.isArray(ds.borderColor) ? ds.borderColor[i] : ds.borderColor; return { text: label, fillStyle: bg, strokeStyle: border, lineWidth: 1, hidden: isNaN(ds.data[i]) || (chart.getDatasetMeta(0).data[i] && chart.getDatasetMeta(0).data[i].hidden), index: i }; }); } return []; }, onClick: (e, legendItem, legend) => { const index = legendItem.index; const ci = legend.chart; if (ci.isDatasetVisible(0)) { const meta = ci.getDatasetMeta(0); meta.data[index].hidden = !meta.data[index].hidden; ci.update(); } } }
                                 }
                             },
-                            scales: isCircular ? {
-                                x: { display: false },
-                                y: { display: false }
-                            } : {
-                                y: {
-                                    beginAtZero: true,
-                                    max: yMax ? parseFloat(yMax) : undefined,
-                                    ticks: { color: textColor }
-                                },
-                                x: {
-                                    ticks: { color: textColor }
-                                }
-                            }
+                            scales: isCircular ? { x: { display: false }, y: { display: false } } : { y: { max: yMax ? parseFloat(yMax) : undefined, ticks: { color: textColor } }, x: { ticks: { color: textColor } } }
                         }
                     });
                 },
@@ -1792,35 +2213,16 @@
                         const nameInput = row.querySelector('.chart-input-name');
                         const valInput = row.querySelector('.chart-input-value');
                         const colInput = row.querySelector('.chart-input-color');
-                        if (nameInput && valInput) {
-                            const l = nameInput.value;
-                            const v = valInput.value;
-                            if (l && v) {
-                                lbls.push(l);
-                                vals.push(v);
-                                colors.push(colInput.value);
-                            }
-                        }
+                        if (nameInput && valInput) { const l = nameInput.value; const v = valInput.value; if (l && v) { lbls.push(l); vals.push(v); colors.push(colInput.value); } }
                     });
-
                     const type = $('chart-type').value;
                     const title = $('chart-title').value || 'Gráfico';
                     const yMax = $('chart-ymax').value;
-                    let datasetName = 'Dados';
-
                     if (lbls.length === 0) return App.ui.toast("Adicione dados.", "error");
-
-                    const chartData = { title, type, labels: lbls, data: vals, colors, yMax, datasetName };
-
-                    if (App.charts.state.editingIdx !== null) {
-                        App.data.content[App.data.activeCatId].charts[App.charts.state.editingIdx] = chartData;
-                    } else {
-                        App.data.content[App.data.activeCatId].charts.push(chartData);
-                    }
-
-                    App.persist();
-                    App.render.charts();
-                    $('modal-chart').classList.add('hidden');
+                    const chartData = { title, type, labels: lbls, data: vals, colors, yMax, datasetName: 'Dados' };
+                    if (App.charts.state.editingIdx !== null) { App.data.content[App.data.activeCatId].charts[App.charts.state.editingIdx] = chartData; }
+                    else { App.data.content[App.data.activeCatId].charts.push(chartData); }
+                    App.persist(); App.render.charts(); $('modal-chart').classList.add('hidden');
                 },
                 del(idx) {
                     App.ui.confirm('Excluir gráfico?', () => {
@@ -1840,9 +2242,7 @@
                 openPDF(data) {
                     const byteCharacters = atob(data.split(',')[1]);
                     const byteNumbers = new Array(byteCharacters.length);
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    }
+                    for (let i = 0; i < byteCharacters.length; i++) { byteNumbers[i] = byteCharacters.charCodeAt(i); }
                     const byteArray = new Uint8Array(byteNumbers);
                     const blob = new Blob([byteArray], { type: 'application/pdf' });
                     const blobUrl = URL.createObjectURL(blob);
